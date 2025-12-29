@@ -1,13 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { getRealEstateAdvice } from '../services/geminiService';
-import { Message, Property } from '../types';
+import { MOCK_PROPERTIES } from '../constants';
+import { Message } from '../types';
 
-interface AiAssistantProps {
-  properties: Property[];
-}
-
-const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
+const AiAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: 'שלום! אני העוזר האישי של שגית פלק. איך אוכל לעזור לכם למצוא את נכס החלומות שלכם היום?' }
   ]);
@@ -27,7 +24,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
     setInput('');
     setIsTyping(true);
 
-    const aiResponse = await getRealEstateAdvice(input, properties);
+    const aiResponse = await getRealEstateAdvice(input, MOCK_PROPERTIES);
     
     setIsTyping(false);
     setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);

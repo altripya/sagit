@@ -7,7 +7,7 @@ export interface Property {
   bedrooms: number;
   bathrooms: number;
   area: number;
-  type: 'Apartment' | 'House' | 'Penthouse' | 'Villa';
+  type: 'Apartment' | 'House' | 'Penthouse' | 'Villa' | 'Plot';
   image: string;
   description: string;
   featured?: boolean;
@@ -16,4 +16,12 @@ export interface Property {
 export interface Message {
   role: 'user' | 'assistant';
   content: string;
+}
+
+export interface PropertyFilters {
+  searchQuery: string;
+  minPrice: number;
+  maxPrice: number;
+  minRooms: number;
+  propertyType: string;
 }
