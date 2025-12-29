@@ -1,0 +1,7 @@
+{
+  "name": "Sagit Falk ",
+  "description": "A premium real estate platform for Sagit Falk, featuring luxury listings and an AI-powered property match assistant.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
