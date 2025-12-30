@@ -4,14 +4,14 @@ import { Property } from '../types';
 
 interface PropertyCardProps {
   property: Property;
+  onClick?: (property: Property) => void;
 }
 
-const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
+const PropertyCard: React.FC<PropertyCardProps> = ({ property, onClick }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // לוגיקה להחלפת תמונות אוטומטית ב-Hover כל 2 שניות
   useEffect(() => {
     let interval: number | undefined;
 
@@ -50,13 +50,26 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
     }
   };
 
+  const currentImg = property.images[currentImageIndex];
+
   return (
-    <div className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-gray-100 group">
+    <div 
+      onClick={() => onClick?.(property)}
+      className="bg-white rounded-[2.5rem] overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-700 border border-gray-100 group cursor-pointer"
+    >
       <div 
-        className="relative h-72 overflow-hidden cursor-pointer bg-slate-900" 
+        className="relative h-72 overflow-hidden bg-slate-100" 
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
+        {/* רקע מטושטש בזמן ריחוף למניעת שטחים מתים כשהתמונה במצב contain */}
+        {isHovered && !property.videoUrl && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center blur-xl scale-110 opacity-30 transition-opacity duration-500"
+            style={{ backgroundImage: `url(${currentImg})` }}
+          />
+        )}
+
         {/* תצוגת וידאו או גלריית תמונות */}
         {isPlaying && property.videoUrl ? (
           <video 
@@ -74,9 +87,9 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
                   key={index}
                   src={img} 
                   alt={`${property.title} - ${index}`}
-                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${
+                  className={`absolute inset-0 w-full h-full transition-all duration-700 ease-in-out ${
                     index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-                  } ${isHovered && !property.videoUrl ? 'scale-105' : 'scale-100'}`}
+                  } ${isHovered && !property.videoUrl ? 'object-contain p-2' : 'object-cover'}`}
                 />
               ))
             ) : (
@@ -87,43 +100,31 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           </div>
         )}
         
-        {/* שכבת הצללה דקורטיבית */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
+        {/* שכבת הצללה דקורטיבית - מוסתרת בריחוף כדי לראות את כל התמונה בבירור */}
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 transition-opacity duration-500 ${isHovered ? 'opacity-0' : 'opacity-40'}`}></div>
 
         {/* תגיות עליונות */}
         <div className="absolute top-5 right-5 z-10 flex flex-col gap-2">
           <span className="bg-white/95 backdrop-blur-md text-slate-900 text-[10px] font-black px-4 py-2 rounded-full uppercase shadow-xl border border-white/20">
             {getTypeLabel(property.type)}
           </span>
-          {property.videoUrl && (
-            <span className="bg-amber-600 text-white p-2 rounded-full shadow-lg self-end animate-pulse">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-              </svg>
-            </span>
-          )}
         </div>
 
-        {/* אינדיקטורים של הגלריה - פסי התקדמות */}
+        {/* חיווי תצוגה מלאה בריחוף */}
+        {isHovered && !property.videoUrl && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-black/20 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full border border-white/20 animate-pulse">
+              תצוגה מלאה
+            </div>
+          </div>
+        )}
+
+        {/* אינדיקטורים של הגלריה */}
         {property.images && property.images.length > 1 && (
           <div className="absolute top-5 left-5 z-10 flex flex-col gap-2">
             <span className="bg-black/40 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-2 border border-white/10">
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
               {isHovered && !property.videoUrl ? `${currentImageIndex + 1} / ${property.images.length}` : `${property.images.length} תמונות`}
             </span>
-            
-            <div className="flex gap-1.5 px-0.5">
-              {property.images.map((_, idx) => (
-                <div 
-                  key={idx} 
-                  className={`h-1 rounded-full transition-all duration-500 shadow-sm ${
-                    idx === currentImageIndex ? 'bg-amber-500 w-5' : 'bg-white/40 w-1.5'
-                  }`}
-                />
-              ))}
-            </div>
           </div>
         )}
         
@@ -147,7 +148,7 @@ const PropertyCard: React.FC<PropertyCardProps> = ({ property }) => {
           {property.location}
         </p>
         
-        <div className="flex justify-between items-center border-t border-gray-50 pt-6 mt-2">
+        <div className="flex justify-between items-center border-t border-gray-100 pt-6 mt-2">
           <div className="flex items-center space-x-reverse space-x-5 text-xs font-bold text-slate-400">
             {property.type !== 'Plot' && (
               <div className="flex items-center gap-1.5">

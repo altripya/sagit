@@ -9,7 +9,7 @@ interface AiAssistantProps {
 
 const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'שלום! אני העוזר האישי של שגית פלק. איך אוכל לעזור לכם למצוא את נכס החלומות שלכם היום?' }
+    { role: 'assistant', content: 'שלום! אני העוזר האישי של שגית פלק וקנזי נדל"ן. איך נוכל לעזור לכם למצוא את נכס החלומות שלכם היום?' }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -39,7 +39,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
         <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-600 shadow-lg relative shrink-0">
           <img 
             src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80" 
-            alt="שגית פלק" 
+            alt="Logo" 
             className="w-full h-full object-cover"
           />
           <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full"></div>
@@ -48,7 +48,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
           <h3 className="text-white font-bold text-lg leading-tight">עוזר נדל"ן אישי</h3>
           <p className="text-slate-400 text-xs flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-            שגית זמינה עבורך
+            שגית וקנזי זמינים עבורך
           </p>
         </div>
       </div>

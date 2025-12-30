@@ -25,13 +25,13 @@ const Navbar: React.FC = () => {
               <img 
                 src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80" 
                 className="w-full h-full object-cover" 
-                alt="Sagit Falk Avatar" 
+                alt="Logo" 
               />
             </div>
             <span className={`text-2xl font-black tracking-tighter transition-colors duration-500 ${
               scrolled ? 'text-slate-900' : 'text-white'
             }`}>
-              שגית פלק <span className="text-amber-600">|</span> נדל"ן
+              שגית פלק & קנזי <span className="text-amber-600">|</span> נדל"ן
             </span>
           </div>
         </div>

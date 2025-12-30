@@ -17,7 +17,7 @@ const Hero: React.FC = () => {
         <div className="max-w-3xl mr-0 ml-auto space-y-8">
           <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-2 rounded-full border border-white/20 mb-4 animate-fade-in-down">
             <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
-            <span className="text-xs font-bold tracking-[0.3em] uppercase">שירות אקסקלוסיבי ללקוחות פרימיום</span>
+            <span className="text-xs font-bold tracking-[0.3em] uppercase">שגית פלק & קנזי נדל"ן - שירות אקסקלוסיבי</span>
           </div>
           
           <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[1.05] tracking-tight animate-fade-in-up">
@@ -26,15 +26,23 @@ const Hero: React.FC = () => {
           </h1>
           
           <p className="text-xl md:text-2xl mb-12 opacity-80 leading-relaxed font-light max-w-2xl mr-0 ml-auto animate-fade-in-up delay-150">
-            שגית פלק, מומחית בנדל"ן יוקרה והשקעות אסטרטגיות, מזמינה אתכם למסע אישי ומקצועי למציאת הנכס המושלם שמתאים בדיוק לחזון שלכם.
+            שגית פלק וקנזי נדל"ן, מומחים בנדל"ן יוקרה והשקעות אסטרטגיות, מזמינים אתכם למסע אישי ומקצועי למציאת הנכס המושלם שמתאים בדיוק לחזון שלכם.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-start animate-fade-in-up delay-300">
             <a href="#properties" className="bg-amber-600 hover:bg-amber-500 text-white px-12 py-5 rounded-2xl font-black text-lg transition-all text-center shadow-[0_20px_40px_-10px_rgba(217,119,6,0.3)] hover:-translate-y-1 active:scale-95">
               לצפייה בנכסים
             </a>
-            <a href="#contact" className="bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 text-white px-12 py-5 rounded-2xl font-black text-lg transition-all text-center hover:-translate-y-1 active:scale-95">
-              תיאום פגישת ייעוץ
+            <a 
+              href="https://wa.me/972548188436" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 text-white px-12 py-5 rounded-2xl font-black text-lg transition-all text-center hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2"
+            >
+              <span>צור קשר בווצאפ</span>
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412 0 6.556-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.222-4.032c1.53.939 3.274 1.435 5.054 1.437 5.408 0 9.809-4.404 9.811-9.812 0-2.623-1.02-5.088-2.871-6.94-1.851-1.852-4.319-2.872-6.94-2.873-5.41 0-9.811 4.403-9.813 9.812 0 2.028.621 3.911 1.796 5.466l-1.12 4.086 4.183-1.096z" />
+              </svg>
             </a>
           </div>
         </div>
