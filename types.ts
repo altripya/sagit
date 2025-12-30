@@ -8,7 +8,8 @@ export interface Property {
   bathrooms: number;
   area: number;
   type: 'Apartment' | 'House' | 'Penthouse' | 'Villa' | 'Plot';
-  image: string;
+  images: string[]; // שונה מ-image למערך של תמונות
+  videoUrl?: string;
   description: string;
   featured?: boolean;
 }

@@ -1,10 +1,13 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { getRealEstateAdvice } from '../services/geminiService';
-import { MOCK_PROPERTIES } from '../constants';
-import { Message } from '../types';
+import { Message, Property } from '../types';
 
-const AiAssistant: React.FC = () => {
+interface AiAssistantProps {
+  properties: Property[];
+}
+
+const AiAssistant: React.FC<AiAssistantProps> = ({ properties }) => {
   const [messages, setMessages] = useState<Message[]>([
     { role: 'assistant', content: 'שלום! אני העוזר האישי של שגית פלק. איך אוכל לעזור לכם למצוא את נכס החלומות שלכם היום?' }
   ]);
@@ -24,7 +27,7 @@ const AiAssistant: React.FC = () => {
     setInput('');
     setIsTyping(true);
 
-    const aiResponse = await getRealEstateAdvice(input, MOCK_PROPERTIES);
+    const aiResponse = await getRealEstateAdvice(input, properties);
     
     setIsTyping(false);
     setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
@@ -33,35 +36,41 @@ const AiAssistant: React.FC = () => {
   return (
     <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden flex flex-col h-[600px] sticky top-24">
       <div className="bg-slate-900 p-6 flex items-center space-x-reverse space-x-4">
-        <div className="w-12 h-12 bg-amber-600 rounded-full flex items-center justify-center text-white">
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.364-6.364l-.707-.707M6.343 17.657l-.707.707m12.728 0l-.707-.707M12 7a5 5 0 015 5 5 5 0 01-5 5 5 5 0 01-5-5 5 5 0 015-5z" />
-          </svg>
+        <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-600 shadow-lg relative shrink-0">
+          <img 
+            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80" 
+            alt="שגית פלק" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full"></div>
         </div>
         <div>
-          <h3 className="text-white font-bold text-lg">עוזר נדל"ן חכם</h3>
-          <p className="text-slate-400 text-xs">מופעל על ידי בינה מלאכותית</p>
+          <h3 className="text-white font-bold text-lg leading-tight">עוזר נדל"ן אישי</h3>
+          <p className="text-slate-400 text-xs flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+            שגית זמינה עבורך
+          </p>
         </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50/50">
         {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}>
+          <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed ${
               msg.role === 'user' 
-                ? 'bg-amber-600 text-white rounded-tr-none' 
-                : 'bg-white shadow-sm border border-gray-100 text-slate-800 rounded-tl-none'
+                ? 'bg-amber-600 text-white rounded-tr-none shadow-md shadow-amber-600/10' 
+                : 'bg-white shadow-sm border border-gray-100 text-slate-800 rounded-tl-none text-right'
             }`}>
               {msg.content}
             </div>
           </div>
         ))}
         {isTyping && (
-          <div className="flex justify-end">
+          <div className="flex justify-start">
             <div className="bg-white px-4 py-3 rounded-2xl shadow-sm border border-gray-100 flex space-x-reverse space-x-1">
-              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
-              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-75"></div>
-              <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce delay-150"></div>
+              <div className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-bounce"></div>
+              <div className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-bounce delay-75"></div>
+              <div className="w-1.5 h-1.5 bg-amber-600 rounded-full animate-bounce delay-150"></div>
             </div>
           </div>
         )}
@@ -75,13 +84,13 @@ const AiAssistant: React.FC = () => {
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSend()}
           placeholder="מה אתם מחפשים?"
-          className="flex-1 bg-gray-100 border-none rounded-full px-5 py-3 text-sm focus:ring-2 focus:ring-amber-600 transition-all"
+          className="flex-1 bg-gray-100 border-none rounded-full px-5 py-3 text-sm focus:ring-2 focus:ring-amber-600 transition-all text-right"
         />
         <button 
           onClick={handleSend}
-          className="bg-slate-900 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-800 transition-colors shrink-0"
+          className="bg-slate-900 text-white w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-800 transition-colors shrink-0 shadow-lg"
         >
-          <svg className="w-5 h-5 transform rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 12h14" />
           </svg>
         </button>

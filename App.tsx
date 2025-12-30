@@ -1,14 +1,18 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import PropertyCard from './components/PropertyCard';
 import AiAssistant from './components/AiAssistant';
 import SearchFilters from './components/SearchFilters';
+import AdminDashboard from './components/AdminDashboard';
 import { MOCK_PROPERTIES } from './constants';
-import { PropertyFilters } from './types';
+import { Property, PropertyFilters } from './types';
 
 const App: React.FC = () => {
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [deletedProperties, setDeletedProperties] = useState<Property[]>([]);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [filters, setFilters] = useState<PropertyFilters>({
     searchQuery: '',
     minPrice: 0,
@@ -17,8 +21,68 @@ const App: React.FC = () => {
     propertyType: 'All'
   });
 
+  // טעינת נכסים מ-localStorage
+  useEffect(() => {
+    const savedActive = localStorage.getItem('sagit_properties');
+    const savedDeleted = localStorage.getItem('sagit_deleted_properties');
+    
+    if (savedActive) {
+      setProperties(JSON.parse(savedActive));
+    } else {
+      setProperties(MOCK_PROPERTIES);
+      localStorage.setItem('sagit_properties', JSON.stringify(MOCK_PROPERTIES));
+    }
+
+    if (savedDeleted) {
+      setDeletedProperties(JSON.parse(savedDeleted));
+    }
+  }, []);
+
+  const saveActive = (newProps: Property[]) => {
+    setProperties(newProps);
+    localStorage.setItem('sagit_properties', JSON.stringify(newProps));
+  };
+
+  const saveDeleted = (newDeleted: Property[]) => {
+    setDeletedProperties(newDeleted);
+    localStorage.setItem('sagit_deleted_properties', JSON.stringify(newDeleted));
+  };
+
+  const handleAddProperty = (prop: Property) => {
+    saveActive([prop, ...properties]);
+  };
+
+  const handleUpdateProperty = (updated: Property) => {
+    saveActive(properties.map(p => p.id === updated.id ? updated : p));
+  };
+
+  const handleDeleteProperty = (id: string) => {
+    const propToDelete = properties.find(p => p.id === id);
+    if (propToDelete) {
+      const newActive = properties.filter(p => p.id !== id);
+      const newDeleted = [propToDelete, ...deletedProperties];
+      saveActive(newActive);
+      saveDeleted(newDeleted);
+    }
+  };
+
+  const handleRestoreProperty = (id: string) => {
+    const propToRestore = deletedProperties.find(p => p.id === id);
+    if (propToRestore) {
+      const newDeleted = deletedProperties.filter(p => p.id !== id);
+      const newActive = [propToRestore, ...properties];
+      saveActive(newActive);
+      saveDeleted(newDeleted);
+    }
+  };
+
+  const handlePermanentDelete = (id: string) => {
+    const newDeleted = deletedProperties.filter(p => p.id !== id);
+    saveDeleted(newDeleted);
+  };
+
   const filteredProperties = useMemo(() => {
-    return MOCK_PROPERTIES.filter(prop => {
+    return properties.filter(prop => {
       const matchesSearch = prop.location.toLowerCase().includes(filters.searchQuery.toLowerCase()) || 
                             prop.title.toLowerCase().includes(filters.searchQuery.toLowerCase());
       const matchesType = filters.propertyType === 'All' || prop.type === filters.propertyType;
@@ -28,81 +92,85 @@ const App: React.FC = () => {
 
       return matchesSearch && matchesType && matchesRooms && matchesMinPrice && matchesMaxPrice;
     });
-  }, [filters]);
+  }, [filters, properties]);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white text-right" dir="rtl">
       <Navbar />
       
       <main>
-        <Hero />
+        <section id="home">
+          <Hero />
+        </section>
 
-        {/* Properties & AI Section */}
-        <section id="properties" className="py-24 bg-gray-50">
+        <section id="properties" className="py-32 bg-gray-50/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col lg:flex-row gap-12">
-              
-              {/* Listings */}
+            <div className="flex flex-col lg:flex-row gap-16">
               <div className="lg:w-2/3">
-                <div className="mb-12 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
-                  <div>
-                    <h2 className="text-4xl font-black text-slate-900 mb-4">נכסים נבחרים</h2>
-                    <p className="text-slate-600 max-w-lg">גלו את מבחר הדירות והבתים היוקרתיים ביותר באזורי הביקוש בישראל.</p>
-                  </div>
-                  <div className="bg-white px-4 py-2 rounded-full border border-gray-100 shadow-sm text-sm font-medium text-slate-600">
-                    נמצאו <span className="text-amber-600 font-bold">{filteredProperties.length}</span> נכסים
+                <div className="mb-12">
+                  <span className="text-amber-600 font-bold tracking-[0.2em] uppercase text-sm mb-4 block">הזדמנויות בלעדיות</span>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+                    <div>
+                      <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-4">נכסים נבחרים</h2>
+                      <p className="text-slate-500 max-w-lg text-lg text-right">
+                        הבית הבא שלכם מחכה כאן מבחר דירות, בתים ומגרשים באזורי ביקוש מצוינים.
+                      </p>
+                    </div>
+                    <div className="bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm text-sm font-bold text-slate-600">
+                      נמצאו <span className="text-amber-600">{filteredProperties.length}</span> תוצאות
+                    </div>
                   </div>
                 </div>
 
-                {/* Advanced Filters */}
-                <SearchFilters filters={filters} onFilterChange={setFilters} />
+                <div className="mb-12">
+                  <SearchFilters filters={filters} onFilterChange={setFilters} />
+                </div>
 
                 {filteredProperties.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     {filteredProperties.map(prop => (
                       <PropertyCard key={prop.id} property={prop} />
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-3xl p-16 text-center border border-dashed border-gray-200">
-                    <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                      <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-slate-900 mb-2">לא נמצאו נכסים תואמים</h3>
-                    <p className="text-slate-500">נסו לשנות את פילטר החיפוש או לאפס את הסינונים</p>
-                    <button 
-                      onClick={() => setFilters({
-                        searchQuery: '',
-                        minPrice: 0,
-                        maxPrice: 50000000,
-                        minRooms: 0,
-                        propertyType: 'All'
-                      })}
-                      className="mt-6 text-amber-600 font-bold hover:underline"
-                    >
-                      איפוס כל הסינונים
-                    </button>
+                  <div className="bg-white rounded-[2rem] p-20 text-center border border-dashed border-gray-200">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-3">לא מצאנו את מה שחיפשתם</h3>
+                    <p className="text-slate-500 mb-8 text-right">נסו להרחיב את טווח המחירים או לשנות את סוג הנכס.</p>
                   </div>
                 )}
               </div>
 
-              {/* AI Assistant Sidebar */}
-              <div className="lg:w-1/3">
-                <div className="sticky top-24">
-                  <AiAssistant />
+              <div className="lg:w-1/3 space-y-10">
+                <div className="sticky top-28">
+                  <div className="mb-10">
+                    <AiAssistant properties={properties} />
+                  </div>
                   
-                  <div className="mt-8 bg-amber-50 rounded-3xl p-8 border border-amber-100">
-                    <h4 className="text-amber-900 font-bold mb-3">צריכים עזרה אישית?</h4>
-                    <p className="text-amber-800 text-sm mb-6 leading-relaxed">שגית פלק זמינה לייעוץ טלפוני אישי לכל שאלה בנושא השקעות נדל"ן או מציאת נכס.</p>
-                    <a href="tel:0500000000" className="flex items-center text-amber-900 font-bold group">
-                      <div className="w-10 h-10 bg-amber-600 text-white rounded-full flex items-center justify-center ml-3 group-hover:bg-amber-500 transition-colors">
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="bg-slate-900 rounded-[2rem] p-10 text-white relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-full h-1 bg-amber-600"></div>
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-amber-600 shadow-xl shrink-0">
+                        <img 
+                          src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80" 
+                          alt="שגית פלק" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <h4 className="text-2xl font-black text-right">ליווי אישי של שגית</h4>
+                    </div>
+                    <p className="text-slate-400 mb-8 leading-relaxed text-right">
+                      כל לקוח מקבל מעטפת מקצועית מלאה הכוללת ייעוץ משפטי, פיננסי ושיווקי ברמה הגבוהה ביותר.
+                    </p>
+                    <a href="tel:0548188435" className="flex items-center p-4 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all group">
+                      <div className="w-12 h-12 bg-amber-600 text-white rounded-full flex items-center justify-center ml-4 group-hover:scale-110 transition-transform">
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                       </div>
-                      050-XXXXXXX
+                      <div className="text-right">
+                        <div className="text-xs text-slate-500 font-bold uppercase tracking-wider mb-1">חייגו עכשיו</div>
+                        <div className="text-xl font-black">054-8188435</div>
+                      </div>
                     </a>
                   </div>
                 </div>
@@ -111,87 +179,68 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        {/* About Section */}
-        <section id="about" className="py-24 bg-white overflow-hidden">
+        <section id="about" className="py-32 bg-white relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
               <div className="relative">
-                <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl">
+                <div className="aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] bg-gray-100">
                   <img 
-                    src="https://api.a0.dev/assets/image?debug=true&aspect_ratio=4:5&prompt=professional%20photo%20of%20a%20successful%20female%20real%20estate%20agent%20brunette%20black%20shirt%20arms%20crossed%20modern%20office%20background%20high%20quality" 
-                    alt="Sagit Falk"
+                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1000&q=80" 
+                    alt="שגית פלק"
                     className="w-full h-full object-cover"
                   />
+                  <div className="absolute inset-0 border-[16px] border-white/10 pointer-events-none rounded-[2.5rem]"></div>
                 </div>
-                <div className="absolute -bottom-10 -left-10 bg-slate-900 text-white p-10 rounded-3xl hidden md:block border-8 border-white">
-                  <div className="text-4xl font-black text-amber-600 mb-2">15+</div>
-                  <div className="text-lg font-medium opacity-80">שנות ניסיון בנדל"ן</div>
-                </div>
+                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-amber-600 rounded-3xl -z-10 animate-pulse"></div>
               </div>
-              
-              <div>
-                <span className="text-amber-600 font-bold tracking-widest uppercase text-sm mb-4 block">אודות המותג</span>
-                <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-8 leading-tight">שגית פלק - מצוינות בשירות נדל"ן</h2>
-                <div className="space-y-6 text-slate-600 text-lg leading-relaxed">
-                  <p>שגית פלק היא מיועצות הנדל"ן המובילות בישראל, המתמחה בשוק היוקרה ובנכסים להשקעה באזור המרכז והשרון.</p>
-                  <p>עם ראייה רחבה של השוק וניסיון עשיר בליווי עסקאות מורכבות, שגית מעניקה ללקוחותיה שקט נפשי וביטחון מלא לאורך כל הדרך.</p>
-                  <p>הגישה שלנו מבוססת על אמון, שקיפות ויחס אישי לכל לקוח, תוך שימוש בכלים הטכנולוגיים המתקדמים ביותר לצד קשרים ענפים בקהילת הנדל"ן.</p>
-                </div>
-                <div className="mt-10 grid grid-cols-2 gap-8">
-                  <div className="p-6 bg-gray-50 rounded-2xl">
-                    <h4 className="font-bold text-slate-900 mb-2">ליווי צמוד</h4>
-                    <p className="text-sm text-slate-500">אנחנו איתכם החל משלב החיפוש ועד קבלת המפתח והחתימה על החוזה.</p>
-                  </div>
-                  <div className="p-6 bg-gray-50 rounded-2xl">
-                    <h4 className="font-bold text-slate-900 mb-2">שיווק אגרסיבי</h4>
-                    <p className="text-sm text-slate-500">חשיפה מקסימלית לנכס שלכם במדיות הדיגיטליות המובילות ובמאגרי לקוחות בלעדיים.</p>
-                  </div>
+              <div className="text-right">
+                <span className="text-amber-600 font-bold tracking-[0.2em] uppercase text-sm mb-6 block">הכר את המומחית</span>
+                <h2 className="text-4xl md:text-6xl font-black text-slate-900 mb-10 leading-[1.1]">שגית פלק - <br />חזון וחדשנות בנדל"ן</h2>
+                <div className="space-y-6 text-slate-500 text-lg leading-relaxed">
+                  <p>עם ניסיון של למעלה מ-15 שנים בשוק הנדל"ן הישראלי, שגית פלק ביססה את מעמדה כאחת הדמויות המובילות בתיווך ושיווק נכסי יוקרה.</p>
+                  <p>המומחיות שלה משלבת הבנה עמוקה של צרכי הלקוח, חשיבה אסטרטגית ושימוש בטכנולוגיות המתקדמות ביותר כדי להבטיח את העסקה הטובה ביותר.</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
-
-        {/* Contact Section */}
-        <section id="contact" className="py-24 bg-slate-900 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-amber-600/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-          <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-4xl md:text-6xl font-black mb-8">מוכנים למצוא את הבית הבא שלכם?</h2>
-            <p className="text-xl opacity-70 mb-12">השאירו פרטים ונחזור אליכם בהקדם לתיאום פגישת הכירות ללא התחייבות.</p>
-            
-            <form className="grid grid-cols-1 md:grid-cols-3 gap-4" onSubmit={(e) => e.preventDefault()}>
-              <input 
-                type="text" 
-                placeholder="שם מלא"
-                className="bg-white/10 border border-white/20 rounded-full px-6 py-4 focus:bg-white focus:text-slate-900 focus:outline-none transition-all"
-              />
-              <input 
-                type="tel" 
-                placeholder="טלפון"
-                className="bg-white/10 border border-white/20 rounded-full px-6 py-4 focus:bg-white focus:text-slate-900 focus:outline-none transition-all"
-              />
-              <button className="bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-full px-8 py-4 shadow-lg shadow-amber-600/20 transition-all">
-                שלח פניה
-              </button>
-            </form>
-          </div>
-        </section>
       </main>
 
-      <footer className="bg-gray-100 py-12 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="mb-8 md:mb-0">
-            <span className="text-xl font-black tracking-tighter text-slate-900">
-              שגית פלק <span className="text-amber-600">|</span> נדל"ן
-            </span>
-          </div>
-          <div className="flex flex-wrap justify-center gap-6 md:space-x-reverse md:space-x-8 text-slate-500 text-sm">
-            <a href="#" className="hover:text-amber-600 transition-colors">מדיניות פרטיות</a>
-            <a href="#" className="hover:text-amber-600 transition-colors">תקנון האתר</a>
-            <span>© 2024 שגית פלק - כל הזכויות שמורות.</span>
+      <footer className="bg-white py-16 border-t border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row-reverse justify-between items-center gap-10 text-right">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-600 shadow-md">
+                <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80" className="w-full h-full object-cover" alt="Sagit Falk" />
+              </div>
+              <span className="text-2xl font-black tracking-tighter text-slate-900">
+                שגית פלק <span className="text-amber-600">|</span> נדל"ן
+              </span>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button 
+                onClick={() => setIsAdminOpen(true)}
+                className="text-xs text-slate-400 hover:text-amber-600 font-bold transition-all underline underline-offset-4"
+              >
+                כניסה למערכת ניהול
+              </button>
+            </div>
           </div>
         </div>
       </footer>
+
+      {isAdminOpen && (
+        <AdminDashboard 
+          properties={properties}
+          deletedProperties={deletedProperties}
+          onAdd={handleAddProperty}
+          onUpdate={handleUpdateProperty}
+          onDelete={handleDeleteProperty}
+          onRestore={handleRestoreProperty}
+          onPermanentDelete={handlePermanentDelete}
+          onClose={() => setIsAdminOpen(false)}
+        />
+      )}
     </div>
   );
 };
